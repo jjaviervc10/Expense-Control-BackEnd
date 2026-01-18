@@ -31,7 +31,7 @@ export const subscribe = async(req, res) => {
         const idUsuario = req.user.id;
         const { endpoint, keys } = req.body;
 
-        if (!endpoint || !keys ? .auth || !keys ? .p256dh) {
+        if (!endpoint || !keys || !keys.auth || !keys.p256dh) {
             return res.status(400).json({
                 ok: false,
                 message: "Suscripción inválida: falta endpoint o keys",
