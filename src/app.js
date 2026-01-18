@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import { initVapid } from "./services/push.service.js";
 
 dotenv.config();
 const app = express();
@@ -8,6 +9,12 @@ const app = express();
 // Middlewares
 app.use(cors());
 app.use(express.json());
+
+// ✅ Inicializar VAPID para web-push
+const vapidOk = initVapid();
+if (!vapidOk) {
+    console.warn("⚠️ Advertencia: Notificaciones push no están configuradas");
+}
 
 // 👉 RUTA RAÍZ (SOLUCIÓN AL 502)
 app.get("/", (req, res) => {
@@ -37,6 +44,9 @@ app.use("/api/presupuesto", presupuestoRoutes);
 
 import resetRoutes from "./routes/reset.routes.js";
 app.use("/api/reset", resetRoutes);
+
+import notificationRoutes from "./routes/notifications.routes.js";
+app.use("/api/notifications", notificationRoutes);
 
 // Puerto
 const PORT = process.env.PORT || 4000;
