@@ -9,7 +9,7 @@ import { sendNotificationToUser, buildNotificationPayload, sendNotificationBroad
 export const sendEngagementNotification = async(req, res) => {
     try {
         // Validar token de seguridad
-        const token = req.headers.authorization ? .replace("Bearer ", "");
+        const token = req.headers.authorization && req.headers.authorization.replace("Bearer ", "");
         if (token !== process.env.CRON_SECRET_TOKEN) {
             console.warn("⚠️ Intento de acceso no autorizado a cron endpoint");
             return res.status(401).json({
