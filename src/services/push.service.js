@@ -27,7 +27,7 @@ export const initVapid = () => {
 /**
  * Envía una notificación push a un dispositivo
  */
-export const sendPushNotification = async (subscription, payload) => {
+export const sendPushNotification = async(subscription, payload) => {
     try {
         if (!subscription || !subscription.endpoint) {
             return {
