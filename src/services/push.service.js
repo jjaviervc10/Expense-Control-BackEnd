@@ -102,7 +102,7 @@ export const sendNotificationToUser = async(userId, payload) => {
                 sent++;
             } else {
                 failed++;
-                if (result.error ? .statusCode === 410) {
+                if (result.error && result.error.statusCode === 410) {
                     await supabase
                         .from("push_subscriptions")
                         .delete()
