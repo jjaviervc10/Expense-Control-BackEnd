@@ -83,7 +83,7 @@ export const sendNotificationToUser = async(userId, payload) => {
         const { data: subscriptions, error } = await supabase
             .from("push_subscriptions")
             .select("id, subscription")
-            .eq("idUsuario", userId);
+            .eq("idusuario", userId);
 
         if (error) {
             console.error("Error obteniendo suscripciones:", error);
