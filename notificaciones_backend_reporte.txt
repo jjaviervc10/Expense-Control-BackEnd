@@ -1,0 +1,237 @@
+==============================
+URL DE PRODUCCIÓN PARA EL FRONTEND
+==============================
+
+El frontend debe consumir los endpoints del backend usando la siguiente URL pública de Railway:
+
+https://expense-control-backend-pruebas.up.railway.app
+
+Todos los endpoints documentados deben ser accedidos anteponiendo esta URL base. Ejemplo:
+- Para obtener la clave pública VAPID: https://expense-control-backend-pruebas.up.railway.app/api/notifications/public-key
+- Para suscribirse: https://expense-control-backend-pruebas.up.railway.app/api/notifications/subscribe
+
+Esta es la URL que se observa en la configuración de Railway y es la que debe usarse en producción para que el frontend se comunique correctamente con el backend desplegado.
+
+==============================
+DEFINICIONES CLAVE
+==============================
+
+**¿Qué son las claves VAPID?**
+VAPID (Voluntary Application Server Identification) es un estándar que permite a los servidores de aplicaciones web identificarse ante los servicios de push (como los navegadores) cuando envían notificaciones push. Consiste en un par de claves (pública y privada):
+- La clave pública se comparte con el frontend y se usa para suscribirse a notificaciones.
+- La clave privada permanece en el backend y se utiliza para firmar los mensajes, asegurando que provienen de un servidor autorizado.
+Esto ayuda a proteger el canal de notificaciones y a evitar envíos no autorizados.
+
+**¿Qué es el rate limiting?**
+El rate limiting es una técnica de seguridad que limita la cantidad de solicitudes que un usuario o cliente puede hacer a un endpoint en un periodo de tiempo determinado. Su objetivo es prevenir abusos, como ataques de fuerza bruta, spam o sobrecarga del servidor. Por ejemplo, se puede permitir solo 100 solicitudes por minuto por usuario/IP. Si se supera ese límite, el servidor rechaza las solicitudes adicionales temporalmente.
+
+==============================
+ANÁLISIS DE SEGURIDAD (ENERO 2026)
+==============================
+
+Resumen general:
+El sistema de notificaciones push implementado en este backend utiliza Node.js/Express, Supabase como base de datos y la librería web-push para la gestión de claves VAPID y el envío de notificaciones. Se han implementado endpoints protegidos por middleware de autenticación y validación de tokens, y se han seguido buenas prácticas en la validación de datos y manejo de errores.
+
+Puntos fuertes:
+- **Autenticación:** Los endpoints sensibles (suscripción/desuscripción, cron) requieren token JWT válido.
+- **Validación de datos:** Se valida la estructura de los objetos de suscripción y los datos recibidos en los endpoints.
+- **Gestión de claves:** Las claves VAPID se mantienen en variables de entorno y no se exponen en el código fuente.
+- **Automatización segura:** El endpoint de cron para notificaciones automáticas requiere un token especial y no está expuesto públicamente.
+- **Manejo de errores:** Se implementan respuestas claras y manejo de errores para evitar fugas de información.
+
+Áreas de mejora y riesgos:
+- **Almacenamiento de suscripciones:** Las suscripciones se almacenan en Supabase, pero no se cifra el campo de suscripción (aunque no suele ser necesario, podría considerarse para mayor privacidad).
+- **Rotación de claves VAPID:** No se ha documentado un proceso de rotación periódica de claves VAPID.
+- **Protección contra abuso:** No hay límites de rate limiting en los endpoints, lo que podría permitir ataques de fuerza bruta o spam.
+- **Auditoría y logs:** No se ha detallado un sistema de auditoría/logs para monitorear accesos y acciones sospechosas.
+- **Actualización de dependencias:** Es importante mantener actualizadas las dependencias npm para evitar vulnerabilidades conocidas.
+- **CORS:** Se debe revisar la configuración de CORS para asegurar que solo el frontend autorizado pueda consumir los endpoints.
+
+Calificación de seguridad actual (estimada):
+**75%**
+
+El sistema cumple con los estándares básicos de seguridad para una API de notificaciones push, pero aún existen áreas de mejora para alcanzar un nivel óptimo (90%+), especialmente en cuanto a protección contra abuso, monitoreo y rotación de claves.
+
+Recomendaciones para subir la calificación:
+- Implementar rate limiting en los endpoints.
+- Documentar y aplicar rotación de claves VAPID.
+- Añadir logs de auditoría para acciones críticas.
+- Revisar y restringir CORS.
+- Mantener dependencias actualizadas y monitorear vulnerabilidades.
+
+---
+
+## 10. Endpoints que debe contemplar el frontend para notificaciones push
+
+- **Obtener clave pública VAPID:**
+  - `GET /api/notifications/public-key`
+  - Uso: El frontend debe llamar a este endpoint para obtener la clave pública y poder suscribirse a notificaciones push.
+
+- **Registrar suscripción push:**
+  - `POST /api/notifications/subscribe`
+  - Uso: El frontend debe enviar el objeto de suscripción `{ endpoint, keys }` junto con el JWT del usuario autenticado para registrar la suscripción en el backend.
+  - Headers: `Authorization: Bearer <JWT>`
+  - Body ejemplo:
+    ```json
+    {
+      "endpoint": "https://fcm.googleapis.com/fcm/send/...",
+      "keys": {
+        "p256dh": "...",
+        "auth": "..."
+      }
+    }
+    ```
+
+- **Eliminar/desuscribir suscripción push:**
+  - `POST /api/notifications/unsubscribe`
+  - Uso: El frontend debe enviar el `endpoint` de la suscripción a eliminar, junto con el JWT del usuario autenticado.
+  - Headers: `Authorization: Bearer <JWT>`
+  - Body ejemplo:
+    ```json
+    {
+      "endpoint": "https://fcm.googleapis.com/fcm/send/..."
+    }
+    ```
+
+- **(Automático, no lo llama el frontend)**
+  - `POST /api/notifications/cron/send`
+  - Uso: Endpoint que solo llama Supabase Cron para disparar notificaciones automáticas. El frontend no debe consumirlo.
+
+---
+# Reporte de Cambios Backend: Notificaciones Push Automáticas
+
+Fecha: 19/01/2026
+Proyecto: Expense-Control-BackEnd
+
+---
+
+## 1. Estructura y lógica implementada
+
+- Se integró un sistema de notificaciones push web usando web-push y Supabase.
+- Se eliminaron dependencias de servicios externos (OneSignal, etc.).
+- Se automatizó el envío de notificaciones de engagement (motivacionales, recordatorios, resúmenes) mediante cron jobs (Supabase y/o node-cron).
+- No se envían notificaciones de presupuesto ni de expiración de suscripción (solo engagement).
+
+---
+
+## 2. Cambios en la base de datos (Supabase)
+
+- Tabla creada: **push_subscriptions**
+  - Columnas: id, idusuario (bigint, minúsculas), subscription (jsonb), created_at
+  - El campo `subscription` almacena el objeto completo de la suscripción push (endpoint, keys, etc.)
+
+---
+
+## 3. Archivos nuevos y modificados en el backend
+
+- **src/services/push.service.js**
+  - Lógica para inicializar VAPID, enviar notificaciones, construir payloads y enviar a usuarios/broadcast.
+  - Corrección: uso de `idusuario` (minúsculas) en todas las consultas.
+  - Validaciones seguras sin optional chaining (compatibles con cualquier Node.js).
+
+- **src/controllers/notifications.controller.js**
+  - Endpoints para suscribirse/desuscribirse y obtener la clave pública VAPID.
+  - Validaciones corregidas para evitar errores de sintaxis.
+
+- **src/controllers/cron.controller.js**
+  - Endpoint para recibir llamadas automáticas desde Supabase Cron y enviar notificaciones de engagement.
+  - Validación segura del token de autorización.
+
+- **src/routes/notifications.routes.js**
+  - Rutas para suscripción, desuscripción, obtención de clave pública y endpoint de cron.
+
+- **src/app.js**
+  - Importación y uso de las rutas de notificaciones.
+  - Inicialización de VAPID.
+  - (Opcional) Inicialización de cron jobs locales para pruebas.
+
+---
+
+## 4. Cambios en lógica y validaciones
+
+- Todas las validaciones de propiedades usan la forma clásica:
+  - Ejemplo: `if (!subscription || !subscription.endpoint) { ... }`
+- Todas las consultas a la tabla `push_subscriptions` usan `idusuario` (minúsculas).
+- Todas las validaciones de token y propiedades usan `&&` en vez de optional chaining.
+
+---
+
+## 5. Adaptaciones para el frontend
+
+- El frontend debe:
+  - Solicitar la clave pública VAPID desde `/api/notifications/public-key`.
+  - Registrar la suscripción push en el backend usando `/api/notifications/subscribe` (enviar `{ endpoint, keys }`).
+  - Permitir desuscribirse usando `/api/notifications/unsubscribe`.
+  - Esperar notificaciones push con payload estándar:
+    - `{ notification: { title, body, icon, badge, tag }, data: { ... } }`
+- No se requiere lógica de presupuesto ni expiración en el frontend para este proceso.
+
+---
+
+## 6. Ejemplo de payload de notificación
+
+```json
+{
+  "notification": {
+    "title": "📝 Recordatorio",
+    "body": "No olvides registrar tus gastos de hoy",
+    "icon": "/logo.png",
+    "badge": "/badge.png",
+    "tag": "engagement"
+  },
+  "data": {
+    "action": "openGastos"
+  }
+}
+```
+
+---
+
+## 7. Recomendaciones para el frontend
+
+- Usar Service Worker para recibir y mostrar notificaciones push.
+- Solicitar permisos de notificación al usuario.
+- Registrar/desregistrar la suscripción en el backend según el estado del usuario.
+- Manejar el payload recibido y mostrar la notificación con los datos enviados.
+
+---
+
+## 8. Notas finales
+
+- El backend está listo para recibir y enviar notificaciones push automáticas de engagement.
+- Todos los endpoints y lógica están adaptados para máxima compatibilidad y seguridad.
+- Si el frontend necesita ejemplos de integración, puede pedirlos aquí.
+
+---
+
+Fin del reporte.
+
+
+---
+
+## 9. ¿Cómo se espera que el usuario interactúe con las notificaciones?
+
+- **Recepción:**
+  - El usuario debe aceptar recibir notificaciones push en el frontend (PWA o web app).
+  - Una vez suscrito, el backend enviará notificaciones automáticas de engagement (recordatorios, motivacionales, resúmenes) según la programación definida.
+
+- **Visualización:**
+  - Las notificaciones aparecerán como mensajes push en el navegador o dispositivo, incluso si la app no está abierta.
+  - El usuario verá el título, cuerpo, icono y, opcionalmente, una imagen o badge.
+
+- **Acción:**
+  - Al hacer clic en la notificación, el Service Worker del frontend debe manejar el evento y redirigir al usuario a la sección relevante de la app (por ejemplo, abrir la pantalla de registro de gastos, dashboard, etc.), usando el campo `data.action` del payload.
+  - Ejemplo: Si `data.action` es `openGastos`, el frontend debe navegar a la vista de gastos.
+
+- **Desuscripción:**
+  - El usuario puede desactivar las notificaciones desde la app, lo que eliminará su suscripción en el backend.
+
+- **Requisitos técnicos en frontend:**
+  - Implementar un Service Worker que escuche y muestre las notificaciones push.
+  - Manejar el evento `notificationclick` para realizar la acción adecuada según el payload recibido.
+  - Gestionar el registro y eliminación de la suscripción push según el estado del usuario (login/logout, preferencias, etc.).
+
+---
+
+**Resumen:**
+El usuario solo debe aceptar las notificaciones una vez. A partir de ahí, recibirá mensajes automáticos de engagement y podrá interactuar con ellos para volver a la app y realizar acciones sugeridas, mejorando la retención y el uso de la plataforma.
