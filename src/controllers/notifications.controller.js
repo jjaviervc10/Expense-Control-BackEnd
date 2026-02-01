@@ -43,13 +43,13 @@ export const subscribe = async(req, res) => {
             keys,
         };
 
-        const { data, error } = await supabase
-            .from("push_subscriptions")
-            .insert([{
-                idUsuario,
-                subscription: subscriptionObject,
-            }, ])
-            .select();
+            const { data, error } = await supabase
+                .from("push_subscriptions")
+                .insert([{
+                    idusuario,
+                    subscription: subscriptionObject,
+                }, ])
+                .select();
 
         if (error) {
             console.error("Error al guardar suscripción:", error);
