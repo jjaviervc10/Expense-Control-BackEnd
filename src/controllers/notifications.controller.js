@@ -28,7 +28,7 @@ export const getVapidPublicKey = (req, res) => {
  */
 export const subscribe = async(req, res) => {
     try {
-        const idUsuario = req.user.id;
+        const idusuario = req.user.id;
         const { endpoint, keys } = req.body;
 
         if (!endpoint || !keys || !keys.auth || !keys.p256dh) {
