@@ -28,6 +28,7 @@ export const getVapidPublicKey = (req, res) => {
  */
 export const subscribe = async(req, res) => {
     try {
+
         const idusuario = req.user.id;
         const { endpoint, keys } = req.body;
 
@@ -43,13 +44,38 @@ export const subscribe = async(req, res) => {
             keys,
         };
 
-            const { data, error } = await supabase
+        // Buscar si ya existe una suscripción para este usuario y endpoint
+        const { data: existing, error: findError } = await supabase
+            .from("push_subscriptions")
+            .select("id")
+            .eq("idusuario", idusuario)
+            .eq("subscription->>endpoint", endpoint)
+            .maybeSingle();
+
+        let data, error;
+        if (findError) {
+            console.error("Error buscando suscripción existente:", findError);
+            return res.status(500).json({
+                ok: false,
+                message: "Error buscando suscripción existente",
+                error: findError.message,
+            });
+        }
+
+        if (existing) {
+            // Si existe, actualizar la suscripción
+            ({ data, error } = await supabase
                 .from("push_subscriptions")
-                .insert([{
-                    idusuario,
-                    subscription: subscriptionObject,
-                }, ])
-                .select();
+                .update({ subscription: subscriptionObject })
+                .eq("id", existing.id)
+                .select());
+        } else {
+            // Si no existe, insertar nueva
+            ({ data, error } = await supabase
+                .from("push_subscriptions")
+                .insert([{ idusuario, subscription: subscriptionObject }])
+                .select());
+        }
 
         if (error) {
             console.error("Error al guardar suscripción:", error);
