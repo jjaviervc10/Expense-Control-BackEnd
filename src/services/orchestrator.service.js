@@ -18,15 +18,24 @@ export async function orchestrateNotification({ tipo, horario }) {
   for (const sub of subscriptions) {
     // Anti-fatiga: máximo 3 notificaciones por usuario/día
     const count = await getUserNotificationCount(sub.idusuario, tipo, date);
-    if (count >= 3) continue;
+    if (count >= 3) {
+      console.log(`[SKIP] Usuario ${sub.idusuario} superó límite anti-fatiga (${count})`);
+      continue;
+    }
 
     // Quiet hours: no enviar después de 21h
     const hour = new Date().getHours();
-    if (hour > 21) continue;
+    if (hour > 21) {
+      console.log(`[SKIP] Usuario ${sub.idusuario} fuera de horario permitido (${hour}h)`);
+      continue;
+    }
 
     // Si el usuario ya registró gastos hoy (simulado)
     // En real: consultar DB de gastos
-    if (tipo === 'recordatorio' && fakeMetrics.gastosSemana > 0) continue;
+    if (tipo === 'recordatorio' && fakeMetrics.gastosSemana > 0) {
+      console.log(`[SKIP] Usuario ${sub.idusuario} ya registró gastos hoy (simulado)`);
+      continue;
+    }
 
     // Selección de copy y variante
     const copy = selectCopy(tipo, horario, sub.idusuario, fakeMetrics);
@@ -61,15 +70,17 @@ export async function orchestrateNotification({ tipo, horario }) {
       try {
         subscriptionObj = JSON.parse(subscriptionObj);
       } catch (e) {
-        console.error('Error parseando suscripción:', e);
+        console.error(`[ERROR] Usuario ${sub.idusuario} - Error parseando suscripción:`, e);
         totalFailed++;
         continue;
       }
     }
 
     // Enviar notificación
+    console.log(`[SEND] Intentando notificar a usuario ${sub.idusuario}...`);
     const result = await sendBatchNotifications([{ ...sub, subscription: subscriptionObj }], payload);
     if (result[0]?.ok) {
+      console.log(`[OK] Notificación enviada a usuario ${sub.idusuario}`);
       totalSent++;
       await logNotification({
         idusuario: sub.idusuario,
@@ -79,6 +90,7 @@ export async function orchestrateNotification({ tipo, horario }) {
         enviado_at: new Date().toISOString()
       });
     } else {
+      console.error(`[FAIL] Falló el envío a usuario ${sub.idusuario}:`, result[0]?.error);
       totalFailed++;
     }
   }
