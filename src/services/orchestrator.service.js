@@ -23,9 +23,9 @@ export async function orchestrateNotification({ tipo, horario }) {
   // Envío por lote con concurrencia limitada
   const batch = [];
   for (const sub of subscriptions) {
-    // Anti-fatiga: máximo 3 notificaciones por usuario/día
+    // Anti-fatiga: máximo 5 notificaciones por usuario/día (más flexible)
     const count = await getUserNotificationCount(sub.idusuario, tipo, date);
-    if (count >= 3) {
+    if (count >= 5) {
       console.log(`[SKIP] Usuario ${sub.idusuario} superó límite anti-fatiga (${count})`);
       continue;
     }
