@@ -13,6 +13,8 @@ const supabase = createClient(
 // POST /api/receipt/upload
 router.post("/upload", upload.single("file"), async (req, res) => {
   try {
+    console.log("[UPLOAD] req.file:", req.file);
+    console.log("[UPLOAD] req.body:", req.body);
     const userId = req.user?.idUsuario || req.body.userId || "anon";
     if (!req.file) {
       return res.status(400).json({ message: "No se recibió archivo" });
