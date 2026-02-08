@@ -58,9 +58,9 @@ import receiptRoutes from "./routes/receipt.routes.js";
 app.use("/api/receipt", receiptRoutes);
 
 // Puerto
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT;
 app.listen(PORT, () => {
-        console.log("Servidor backend escuchando en puerto", PORT);
+    console.log("Servidor backend escuchando en puerto", PORT);
 });
 
 
