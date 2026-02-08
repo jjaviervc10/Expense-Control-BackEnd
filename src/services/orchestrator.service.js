@@ -15,7 +15,7 @@ export async function orchestrateNotification({ tipo, horario }) {
   // Simulación de métricas por usuario (en real, consultar DB de gastos)
   // TODO: Integrar con DB real de métricas si está disponible
   const fakeMetrics = {
-    gastosSemana: 12,
+    gastosSemana: 0, // Para pruebas: permite enviar recordatorio
     diasHabito: 5,
     promedioDia: 50
   };
