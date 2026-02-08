@@ -55,8 +55,20 @@ export async function orchestrateNotification({ tipo, horario }) {
       data: { action }
     };
 
+    // Parsear la suscripción si es string
+    let subscriptionObj = sub.subscription;
+    if (typeof subscriptionObj === 'string') {
+      try {
+        subscriptionObj = JSON.parse(subscriptionObj);
+      } catch (e) {
+        console.error('Error parseando suscripción:', e);
+        totalFailed++;
+        continue;
+      }
+    }
+
     // Enviar notificación
-    const result = await sendBatchNotifications([sub], payload);
+    const result = await sendBatchNotifications([{ ...sub, subscription: subscriptionObj }], payload);
     if (result[0]?.ok) {
       totalSent++;
       await logNotification({
