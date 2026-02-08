@@ -51,5 +51,13 @@ app.use("/api/notifications", notificationRoutes);
 // Puerto
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
-    console.log("Servidor backend escuchando en puerto", PORT);
+        console.log("Servidor backend escuchando en puerto", PORT);
+});
+
+// Manejo global de errores para evitar caídas inesperadas
+process.on('uncaughtException', err => {
+    console.error('Uncaught Exception:', err);
+});
+process.on('unhandledRejection', err => {
+    console.error('Unhandled Rejection:', err);
 });
