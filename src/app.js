@@ -54,8 +54,12 @@ app.use("/api/reset", resetRoutes);
 import notificationRoutes from "./routes/notifications.route.js";
 app.use("/api/notifications", notificationRoutes);
 
+
 import receiptRoutes from "./routes/receipt.routes.js";
 app.use("/api/receipt", receiptRoutes);
+
+import receiptUploadRoutes from "./routes/receipt.upload.route.js";
+app.use("/api/receipt", receiptUploadRoutes);
 
 // Puerto
 
