@@ -58,9 +58,14 @@ import receiptRoutes from "./routes/receipt.routes.js";
 app.use("/api/receipt", receiptRoutes);
 
 // Puerto
+
+console.log('PORT env:', process.env.PORT);
+if (!process.env.PORT) {
+    console.error('❌ ERROR: process.env.PORT no está definido. Railway no está inyectando el puerto.');
+}
 const PORT = process.env.PORT;
 app.listen(PORT, () => {
-    console.log("Servidor backend escuchando en puerto", PORT);
+        console.log("Servidor backend escuchando en puerto", PORT);
 });
 
 
