@@ -10,6 +10,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Log de acceso para cada petición entrante
+app.use((req, res, next) => {
+    console.log(`[ACCESS] ${req.method} ${req.originalUrl} - ${new Date().toISOString()}`);
+    next();
+});
+
 // ✅ Inicializar VAPID para web-push
 const vapidOk = initVapid();
 if (!vapidOk) {
