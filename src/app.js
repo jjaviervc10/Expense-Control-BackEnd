@@ -54,6 +54,9 @@ app.use("/api/reset", resetRoutes);
 import notificationRoutes from "./routes/notifications.route.js";
 app.use("/api/notifications", notificationRoutes);
 
+import receiptRoutes from "./routes/receipt.routes.js";
+app.use("/api/receipt", receiptRoutes);
+
 // Puerto
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
