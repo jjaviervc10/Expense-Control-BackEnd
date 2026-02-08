@@ -4,6 +4,7 @@ import { selectCopy } from './content.service.js';
 import { sendBatchNotifications } from './dispatch.service.js';
 export async function orchestrateNotification({ tipo, horario }) {
   const subscriptions = await getActivePushSubscriptions();
+  console.log('[DEBUG] Subscripciones obtenidas:', subscriptions);
   const date = new Date().toISOString().slice(0, 10);
   let totalSent = 0;
   let totalFailed = 0;
@@ -16,6 +17,7 @@ export async function orchestrateNotification({ tipo, horario }) {
   };
 
   for (const sub of subscriptions) {
+    console.log('[DEBUG] Procesando suscripción:', sub);
     // Validar y parsear suscripción
     let subscriptionObj = sub.subscription;
     if (typeof subscriptionObj === 'string') {
@@ -46,6 +48,7 @@ export async function orchestrateNotification({ tipo, horario }) {
     // Enviar notificación
     console.log(`[SEND] Enviando a usuario ${sub.idusuario}...`);
     const result = await sendBatchNotifications([{ ...sub, subscription: subscriptionObj }], payload);
+    console.log('[DEBUG] Resultado de sendBatchNotifications:', result);
     if (result[0]?.ok) {
       console.log(`[OK] Notificación enviada a usuario ${sub.idusuario}`);
       totalSent++;
