@@ -39,8 +39,8 @@ export const sendEngagementNotification = async(req, res) => {
             });
         }
 
-        let payload;
 
+        let payload;
         switch (tipo) {
             case "recordatorio":
                 payload = buildNotificationPayload({
@@ -49,7 +49,6 @@ export const sendEngagementNotification = async(req, res) => {
                     data: { action: "openGastos" },
                 });
                 break;
-
             case "resumen":
                 payload = buildNotificationPayload({
                     title: "📊 Resumen de la semana",
@@ -57,7 +56,6 @@ export const sendEngagementNotification = async(req, res) => {
                     data: { action: "openDashboard" },
                 });
                 break;
-
             case "motivacion":
                 const mensajes = [
                     "¡Llevas una buena racha! 🚀",
@@ -66,14 +64,19 @@ export const sendEngagementNotification = async(req, res) => {
                     "¡Excelente control de gastos! ✨",
                 ];
                 const mensaje = mensajes[Math.floor(Math.random() * mensajes.length)];
-
                 payload = buildNotificationPayload({
                     title: "💪 Motivación",
                     body: mensaje,
                     data: { action: "openDashboard" },
                 });
                 break;
-
+            case "estacional":
+                payload = buildNotificationPayload({
+                    title: "🎉 Campaña",
+                    body: "¡Disfruta de nuestra campaña estacional!",
+                    data: { action: "openDashboard" },
+                });
+                break;
             default:
                 return res.status(400).json({
                     ok: false,
