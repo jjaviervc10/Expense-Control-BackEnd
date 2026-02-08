@@ -1,3 +1,4 @@
+import { orchestrateNotification } from '../services/orchestrator.service.js';
 import { sendNotificationToUser, buildNotificationPayload, sendNotificationBroadcast } from "../services/push.service.js";
 
 /**
@@ -18,7 +19,18 @@ export const sendEngagementNotification = async(req, res) => {
             });
         }
 
-        const { tipo } = req.body;
+        const { tipo, slot } = req.body;
+        const now = new Date();
+        // Derivar slot si no viene en body
+        const hour = now.getHours();
+        let horario = slot;
+        if (!horario) {
+            if (hour >= 9 && hour < 12) horario = "9am";
+            else if (hour >= 12 && hour < 15) horario = "12pm";
+            else if (hour >= 15 && hour < 18) horario = "3pm";
+            else if (hour >= 18 && hour < 21) horario = "6pm";
+            else horario = "9pm";
+        }
 
         if (!tipo) {
             return res.status(400).json({
@@ -69,16 +81,17 @@ export const sendEngagementNotification = async(req, res) => {
                 });
         }
 
-        // Enviar a todos los usuarios activos
-        const { totalSent, totalFailed } = await sendNotificationBroadcast(payload);
-
-        console.log(`✅ Notificación ${tipo} enviada a ${totalSent} usuarios`);
+        // Orquestar notificación
+        console.log(`Cron autorizado | tipo: ${tipo} | horario: ${horario}`);
+        const { totalSent, totalFailed } = await orchestrateNotification({ tipo, horario });
+        console.log(`✅ Notificación ${tipo} enviada a ${totalSent} usuarios (fallidos: ${totalFailed})`);
 
         return res.json({
             ok: true,
-            message: `Notificación ${tipo} enviada`,
-            totalSent,
-            totalFailed,
+            tipo,
+            horario,
+            usuarios_notificados: totalSent,
+            usuarios_fallidos: totalFailed,
             timestamp: new Date().toISOString(),
         });
     } catch (err) {

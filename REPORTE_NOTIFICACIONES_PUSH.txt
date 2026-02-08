@@ -1,0 +1,75 @@
+8. Integración técnica con Supabase
+-----------------------------------
+El backend utiliza la librería oficial supabase-js para comunicarse con la base de datos Supabase.
+
+- En el archivo src/supabase.js se inicializa la conexión usando la URL y la clave API de Supabase (almacenadas en variables de entorno).
+- Todas las operaciones de lectura, escritura, actualización y eliminación de datos se realizan mediante métodos de supabase-js, por ejemplo:
+  - .from("push_subscriptions").insert([...]) para guardar suscripciones.
+  - .from("push_subscriptions").delete().eq("id", ...) para eliminar suscripciones inválidas.
+  - .from("sUsuario").select("idUsuario") para obtener usuarios activos.
+- La comunicación es segura y autenticada mediante la clave API y las reglas de seguridad (RLS) configuradas en Supabase.
+- El backend nunca expone la clave API al frontend ni a los usuarios.
+
+Esto garantiza que todas las operaciones sobre la base de datos se gestionan de forma centralizada y segura desde el backend, manteniendo la integridad y privacidad de los datos.
+==============================
+REPORTE DE PROCESO DE NOTIFICACIONES PUSH
+==============================
+
+1. Descripción General
+----------------------
+El backend implementa un sistema de notificaciones push personalizado usando Node.js/Express, Supabase y la librería web-push. Permite a los usuarios suscribirse/desuscribirse a notificaciones, y al sistema enviar notificaciones automáticas o manuales.
+
+2. Flujo de Suscripción de Usuario
+----------------------------------
+- El usuario, desde el frontend (PWA), acepta recibir notificaciones push.
+- El navegador genera un objeto de suscripción (PushSubscription) con endpoint y claves (p256dh, auth).
+- El frontend envía este objeto al backend mediante el endpoint:
+  POST /api/notifications/subscribe
+- El backend valida el JWT del usuario y almacena la suscripción en la tabla push_subscriptions (campos: id, idusuario, subscription, created_at).
+
+Sí, el backend ya responde cuando un usuario se suscribe exitosamente con:
+{
+  "ok": true,
+  "message": "¡Te has suscrito a notificaciones!"
+}
+
+3. Envío de Notificaciones
+--------------------------
+- El backend puede enviar notificaciones a un usuario específico o a todos (broadcast).
+- Para notificaciones automáticas (engagement), un cron job (local o Supabase) ejecuta el endpoint:
+  POST /api/cron/send
+- El backend obtiene las suscripciones activas y usa web-push para enviar el mensaje a cada endpoint.
+- Si una suscripción es inválida (por ejemplo, el usuario desinstaló la PWA), se elimina de la base de datos.
+
+4. Lógica cuando un usuario acepta notificaciones
+-------------------------------------------------
+- El usuario acepta en el frontend.
+- El navegador crea el objeto PushSubscription.
+- El frontend lo envía al backend junto con el JWT.
+- El backend:
+  a) Verifica el JWT y extrae el idusuario.
+  b) Valida la estructura del objeto de suscripción.
+  c) Guarda o actualiza la suscripción en push_subscriptions.
+- El usuario queda registrado para recibir notificaciones push.
+
+5. Endpoints relevantes
+-----------------------
+- GET  /api/notifications/public-key   (clave pública VAPID para frontend)
+- POST /api/notifications/subscribe    (guardar suscripción)
+- POST /api/notifications/unsubscribe  (eliminar suscripción)
+- POST /api/cron/send                  (envío automático, requiere token especial)
+
+6. Seguridad y validaciones
+---------------------------
+- Todos los endpoints requieren JWT válido (excepto public-key).
+- Validación estricta de estructura de suscripción.
+- Manejo de errores y eliminación de suscripciones inválidas.
+
+7. Consideraciones
+------------------
+- El sistema está listo para integración con frontend PWA.
+- Los valores de endpoint, p256dh y auth deben ser generados por el navegador.
+- El backend está alineado con la estructura de la base de datos en Supabase.
+
+
+Este reporte puede ser compartido directamente en el chat de VS Code para referencia del equipo de desarrollo.
