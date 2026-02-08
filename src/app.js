@@ -63,6 +63,7 @@ app.listen(PORT, () => {
         console.log("Servidor backend escuchando en puerto", PORT);
 });
 
+
 // Manejo global de errores para evitar caídas inesperadas
 process.on('uncaughtException', err => {
     console.error('Uncaught Exception:', err);
@@ -70,3 +71,6 @@ process.on('uncaughtException', err => {
 process.on('unhandledRejection', err => {
     console.error('Unhandled Rejection:', err);
 });
+
+// --- POLLING DE NOTIFICACIONES ---
+import "./pollingNotificationEvents.js";
