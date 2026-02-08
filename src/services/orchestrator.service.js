@@ -16,79 +16,40 @@ export async function orchestrateNotification({ tipo, horario }) {
   };
 
   for (const sub of subscriptions) {
-    // Anti-fatiga: máximo 3 notificaciones por usuario/día
-    const count = await getUserNotificationCount(sub.idusuario, tipo, date);
-    if (count >= 3) {
-      console.log(`[SKIP] Usuario ${sub.idusuario} superó límite anti-fatiga (${count})`);
-      continue;
-    }
-
-    // Quiet hours: no enviar después de 21h
-    const hour = new Date().getHours();
-    if (hour > 21) {
-      console.log(`[SKIP] Usuario ${sub.idusuario} fuera de horario permitido (${hour}h)`);
-      continue;
-    }
-
-    // Si el usuario ya registró gastos hoy (simulado)
-    // En real: consultar DB de gastos
-    if (tipo === 'recordatorio' && fakeMetrics.gastosSemana > 0) {
-      console.log(`[SKIP] Usuario ${sub.idusuario} ya registró gastos hoy (simulado)`);
-      continue;
-    }
-
-    // Selección de copy y variante
-    const copy = selectCopy(tipo, horario, sub.idusuario, fakeMetrics);
-    const variante = copy;
-    let title = 'Notificación';
-    let action = 'openGastos';
-    if (tipo === 'recordatorio') {
-      title = '📝 Recordatorio';
-      action = 'openGastos';
-    } else if (tipo === 'motivacion') {
-      title = '💪 Motivación';
-      action = 'openDashboard';
-    } else if (tipo === 'resumen') {
-      title = '📊 Resumen de la semana';
-      action = 'openDashboard';
-    } else if (tipo === 'estacional') {
-      title = '🎉 Campaña';
-      action = 'openDashboard';
-    }
-    const payload = {
-      notification: {
-        title,
-        body: copy,
-        tag: tipo,
-      },
-      data: { action }
-    };
-
-    // Parsear la suscripción si es string
+    // Validar y parsear suscripción
     let subscriptionObj = sub.subscription;
     if (typeof subscriptionObj === 'string') {
       try {
         subscriptionObj = JSON.parse(subscriptionObj);
       } catch (e) {
-        console.error(`[ERROR] Usuario ${sub.idusuario} - Error parseando suscripción:`, e);
+        console.error('[ERROR] Parseo de suscripción fallido:', e);
         totalFailed++;
         continue;
       }
     }
+    if (!subscriptionObj || !subscriptionObj.endpoint) {
+      console.error('[ERROR] Suscripción sin endpoint:', subscriptionObj);
+      totalFailed++;
+      continue;
+    }
+
+    // Payload simple para pruebas
+    const payload = {
+      notification: {
+        title: '🔔 Prueba de notificación',
+        body: '¡Tu backend puede enviar push correctamente!',
+        tag: 'test',
+      },
+      data: { action: 'openGastos' }
+    };
 
     // Enviar notificación
-    console.log(`[SEND] Intentando notificar a usuario ${sub.idusuario}...`);
+    console.log(`[SEND] Enviando a usuario ${sub.idusuario}...`);
     const result = await sendBatchNotifications([{ ...sub, subscription: subscriptionObj }], payload);
     if (result[0]?.ok) {
       console.log(`[OK] Notificación enviada a usuario ${sub.idusuario}`);
       totalSent++;
-      await logNotification({
-        idusuario: sub.idusuario,
-        tipo,
-        horario,
-        variante,
-        enviado_at: new Date().toISOString()
-      });
+      // Puedes registrar en logNotification si quieres
     } else {
       console.error(`[FAIL] Falló el envío a usuario ${sub.idusuario}:`, result[0]?.error);
       totalFailed++;
