@@ -2,9 +2,14 @@
 import { supabase } from '../supabase.js';
 
 export async function logNotification({ idusuario, tipo, horario, variante, enviado_at }) {
-  await supabase.from('notifications_log').insert([
+  const { error, data } = await supabase.from('notifications_log').insert([
     { idusuario, tipo, horario, variante, enviado_at }
   ]);
+  if (error) {
+    console.error('[ERROR][logNotification] Falló inserción en notifications_log:', error);
+  } else {
+    console.log('[OK][logNotification] Notificación registrada en notifications_log:', data);
+  }
 }
 
 export async function getUserNotificationCount(idusuario, tipo, date) {
