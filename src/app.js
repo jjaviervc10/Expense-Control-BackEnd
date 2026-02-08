@@ -54,7 +54,7 @@ app.use("/api/reset", resetRoutes);
 import notificationRoutes from "./routes/notifications.route.js";
 app.use("/api/notifications", notificationRoutes);
 
-import receiptRoutes from "./routes/receipt.routes.js";
+const receiptRoutes = require("./routes/receipt.routes.js");
 app.use("/api/receipt", receiptRoutes);
 
 // Puerto

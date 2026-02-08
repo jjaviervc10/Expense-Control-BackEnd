@@ -1,5 +1,5 @@
 // Servicio para orquestar el flujo de procesamiento de tickets
-class ReceiptController {
+export default class ReceiptController {
   // Recibe request del frontend, valida usuario y referencia de imagen
   async processReceipt(req, res) {
     try {
@@ -44,5 +44,3 @@ class ReceiptController {
     }
   }
 }
-
-module.exports = new ReceiptController();
