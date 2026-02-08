@@ -45,7 +45,7 @@ app.use("/api/presupuesto", presupuestoRoutes);
 import resetRoutes from "./routes/reset.routes.js";
 app.use("/api/reset", resetRoutes);
 
-import notificationRoutes from "./routes/notifications.routes.js";
+import notificationRoutes from "./routes/notifications.route.js";
 app.use("/api/notifications", notificationRoutes);
 
 // Puerto
