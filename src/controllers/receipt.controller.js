@@ -13,29 +13,30 @@ export default class ReceiptController {
         return res.status(400).json({ message: 'Faltan datos requeridos' });
       }
 
-      // Validar y generar signed URL
-      const storageService = require('../services/receiptStorage.service');
+
+      // Validar y generar signed URL (import dinámico compatible con ES Modules)
+      const storageService = (await import('../services/receiptStorage.service.js')).default || (await import('../services/receiptStorage.service.js'));
       const { signedUrl } = await storageService.validateAndSignUrl(imagePath);
       if (!signedUrl) {
         return res.status(400).json({ message: 'URL de imagen inválida' });
       }
 
       // Extraer texto con OpenAI Vision
-      const visionService = require('../services/receiptVision.service');
+      const visionService = (await import('../services/receiptVision.service.js')).default || (await import('../services/receiptVision.service.js'));
       const { rawText } = await visionService.extractTextFromImage(signedUrl);
       if (!rawText) {
         return res.status(502).json({ message: 'Error al extraer texto de imagen' });
       }
 
       // Parsear y clasificar productos
-      const parserService = require('../services/receiptParser.service');
+      const parserService = (await import('../services/receiptParser.service.js')).default || (await import('../services/receiptParser.service.js'));
       const { parsed } = await parserService.parseAndClassify(rawText);
       if (!parsed) {
         return res.status(502).json({ message: 'Error al parsear ticket' });
       }
 
       // Guardar registro y eliminar imagen
-      const persistenceService = require('../services/receiptPersistence.service');
+      const persistenceService = (await import('../services/receiptPersistence.service.js')).default || (await import('../services/receiptPersistence.service.js'));
       const { success } = await persistenceService.persistAndCleanup(parsed, userId, imagePath);
       if (!success) {
         return res.status(500).json({ message: 'Error al guardar ticket o eliminar imagen' });
