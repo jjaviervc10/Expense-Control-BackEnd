@@ -46,4 +46,4 @@ class ReceiptPersistenceService {
   }
 }
 
-module.exports = new ReceiptPersistenceService();
+export default new ReceiptPersistenceService();

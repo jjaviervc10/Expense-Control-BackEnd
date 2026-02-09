@@ -39,4 +39,4 @@ class ReceiptParserService {
   }
 }
 
-module.exports = new ReceiptParserService();
+export default new ReceiptParserService();

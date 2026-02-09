@@ -32,4 +32,4 @@ class ReceiptVisionService {
   }
 }
 
-module.exports = new ReceiptVisionService();
+export default new ReceiptVisionService();

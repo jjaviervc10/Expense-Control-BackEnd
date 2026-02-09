@@ -27,4 +27,4 @@ class ReceiptStorageService {
   }
 }
 
-module.exports = new ReceiptStorageService();
+export default new ReceiptStorageService();
