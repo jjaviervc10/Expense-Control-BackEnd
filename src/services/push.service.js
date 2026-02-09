@@ -1,5 +1,5 @@
 import webpush from "web-push";
-import { supabase } from "../supabase.js";
+import supabase from "../supabase.js";
 
 /**
  * Inicializa las claves VAPID para web-push
