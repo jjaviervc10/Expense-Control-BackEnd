@@ -1,7 +1,7 @@
 // Servicio para guardar registro y eliminar imagen tras procesamiento
 import { createClient } from '@supabase/supabase-js';
 import crypto from 'crypto';
-import db from '../supabase.js';
+import db from '../db.js';
 class ReceiptPersistenceService {
   // Guarda registro, crea gastos, elimina imagen y actualiza campos
   async persistAndCleanup(parsedReceipt, userId, imagePath) {
