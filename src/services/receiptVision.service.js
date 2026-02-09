@@ -11,7 +11,7 @@ class ReceiptVisionService {
       const response = await axios.post(
         'https://api.openai.com/v1/chat/completions',
         {
-          model: 'gpt-4-1106-vision-preview',
+          model: 'gpt-4o',
           messages: [
             {
               role: 'system',
