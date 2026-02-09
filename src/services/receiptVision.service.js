@@ -25,8 +25,10 @@ class ReceiptVisionService {
       if (response.data && response.data.text) {
         return { rawText: response.data.text };
       }
+      console.error('[receiptVision] Respuesta inesperada:', response.data);
       return { rawText: null };
     } catch (error) {
+      console.error('[receiptVision] Error al llamar a OpenAI Vision:', error?.response?.data || error.message || error);
       return { rawText: null };
     }
   }
