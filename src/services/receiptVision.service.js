@@ -22,7 +22,7 @@ class ReceiptVisionService {
               content: [
                 {
                   type: 'image_url',
-                  image_url: signedUrl
+                  image_url: { url: signedUrl }
                 }
               ]
             }
