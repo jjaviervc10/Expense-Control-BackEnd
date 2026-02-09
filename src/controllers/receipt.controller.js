@@ -4,7 +4,8 @@ export default class ReceiptController {
   async processReceipt(req, res) {
     try {
       const { imagePath } = req.body;
-      const userId = req.user?.idUsuario;
+      // Permitir ambos: idUsuario (viejo) o id (nuevo)
+      const userId = req.user?.idUsuario || req.user?.id;
       if (!imagePath || !userId) {
         return res.status(400).json({ message: 'Faltan datos requeridos' });
       }
