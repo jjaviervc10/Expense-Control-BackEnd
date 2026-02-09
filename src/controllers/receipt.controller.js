@@ -23,9 +23,10 @@ export default class ReceiptController {
 
       // Extraer texto con OpenAI Vision
       const visionService = (await import('../services/receiptVision.service.js')).default || (await import('../services/receiptVision.service.js'));
-      const { rawText } = await visionService.extractTextFromImage(signedUrl);
-      if (!rawText) {
-        return res.status(502).json({ message: 'Error al extraer texto de imagen' });
+        const { rawText } = await visionService.extractTextFromImage(signedUrl);
+        console.log('[processReceipt] Respuesta cruda de OpenAI:', rawText);
+        if (!rawText) {
+          return res.status(502).json({ message: 'Error al extraer texto de imagen' });
       }
 
       // Parsear y clasificar productos
@@ -34,6 +35,7 @@ export default class ReceiptController {
       if (!parsed) {
         return res.status(502).json({ message: 'Error al parsear ticket' });
       }
+        console.error('[processReceipt] Texto recibido de OpenAI:', rawText);
 
       // Guardar registro y eliminar imagen
       const persistenceService = (await import('../services/receiptPersistence.service.js')).default || (await import('../services/receiptPersistence.service.js'));
