@@ -9,21 +9,36 @@ class ReceiptVisionService {
 
     try {
       const response = await axios.post(
-        'https://api.openai.com/v1/vision/text-extract',
+        'https://api.openai.com/v1/chat/completions',
         {
-          image_url: signedUrl,
-          prompt,
+          model: 'gpt-4-vision-preview',
+          messages: [
+            {
+              role: 'system',
+              content: prompt
+            },
+            {
+              role: 'user',
+              content: [
+                {
+                  type: 'image_url',
+                  image_url: signedUrl
+                }
+              ]
+            }
+          ],
+          max_tokens: 1024
         },
         {
           headers: {
             'Authorization': `Bearer ${OPENAI_KEY}`,
             'Content-Type': 'application/json',
           },
-          timeout: 15000, // 15 segundos
+          timeout: 20000, // 20 segundos
         }
       );
-      if (response.data && response.data.text) {
-        return { rawText: response.data.text };
+      if (response.data && response.data.choices && response.data.choices[0]?.message?.content) {
+        return { rawText: response.data.choices[0].message.content };
       }
       console.error('[receiptVision] Respuesta inesperada:', response.data);
       return { rawText: null };
