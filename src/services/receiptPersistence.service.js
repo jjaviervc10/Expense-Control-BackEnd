@@ -6,7 +6,7 @@ class ReceiptPersistenceService {
   // Guarda registro, crea gastos, elimina imagen y actualiza campos
   async persistAndCleanup(parsedReceipt, userId, imagePath) {
     const SUPABASE_URL = process.env.SUPABASE_URL;
-    const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
+    const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
     const BUCKET = 'receipts';
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
