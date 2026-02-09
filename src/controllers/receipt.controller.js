@@ -3,9 +3,12 @@ export default class ReceiptController {
   // Recibe request del frontend, valida usuario y referencia de imagen
   async processReceipt(req, res) {
     try {
+      console.log('[processReceipt] req.body:', req.body);
+      console.log('[processReceipt] req.user:', req.user);
       const { imagePath } = req.body;
       // Permitir ambos: idUsuario (viejo) o id (nuevo)
       const userId = req.user?.idUsuario || req.user?.id;
+      console.log('[processReceipt] userId extraído:', userId);
       if (!imagePath || !userId) {
         return res.status(400).json({ message: 'Faltan datos requeridos' });
       }
