@@ -1,4 +1,4 @@
-import { supabase } from "../supabase.js";
+import supabase from "../supabase.js";
 import { getPublicVapidKey } from "../services/push.service.js";
 
 /**

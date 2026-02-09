@@ -1,5 +1,5 @@
 // src/controllers/admin.controller.js
-import { supabase } from "../supabase.js";
+import supabase from "../supabase.js";
 
 // Lista TODOS los usuarios (luego puedes filtrar por rol, prueba, etc.)
 export const listarUsuarios = async(req, res) => {

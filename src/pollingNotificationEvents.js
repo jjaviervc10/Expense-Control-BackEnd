@@ -1,7 +1,7 @@
 // pollingNotificationEvents.js
 // Polls Supabase for pending notification events and processes them
 
-import { supabase } from "./supabase.js";
+import supabase from "./supabase.js";
 
 import { orchestrateNotification } from "./services/orchestrator.service.js";
 

@@ -1,5 +1,5 @@
 // src/controllers/gasto.controller.js
-import { supabase } from "../supabase.js";
+import supabase from "../supabase.js";
 
 /* ==========================
    MAPA DE CATEGORÍAS

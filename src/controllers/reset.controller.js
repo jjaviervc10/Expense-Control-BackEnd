@@ -1,5 +1,5 @@
 // src/controllers/reset.controller.js
-import { supabase } from "../supabase.js";
+import supabase from "../supabase.js";
 import { generarPdfGastos } from "../services/pdf.service.js";
 import { enviarPdfPorEmail } from "../services/email.service.js";
 

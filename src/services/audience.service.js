@@ -1,5 +1,5 @@
 // AudienceService: Obtiene usuarios activos con suscripción push
-import { supabase } from '../supabase.js';
+import supabase from '../supabase.js';
 
 export async function getActivePushSubscriptions() {
   // 1. Obtén los idUsuario activos

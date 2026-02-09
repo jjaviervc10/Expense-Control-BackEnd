@@ -1,5 +1,5 @@
 // MetricsService: Registra envíos en notifications_log y consulta anti-fatiga
-import { supabase } from '../supabase.js';
+import supabase from '../supabase.js';
 
 export async function logNotification({ idusuario, tipo, horario, variante, enviado_at }) {
   const { error, data } = await supabase.from('notifications_log').insert([

@@ -1,4 +1,4 @@
-import { supabase } from "../supabase.js";
+import supabase from "../supabase.js";
 
 export const crearPresupuesto = async(req, res) => {
     const { montoLimite, fechaInicio, fechaFin, categoria } = req.body;
