@@ -1,9 +1,9 @@
 // Servicio para consumir OpenAI Vision API
+import axios from 'axios';
 class ReceiptVisionService {
   // Envía imagen y prompt, retorna texto crudo
   async extractTextFromImage(signedUrl) {
     const OPENAI_KEY = process.env.OPENAI_KEY;
-    const axios = require('axios');
     // Prompt determinista para tickets
     const prompt = `Eres un sistema de extracción de datos. Analiza el ticket y devuelve exclusivamente JSON válido. Campos requeridos: comercio, fecha (YYYY-MM-DD), total (number), moneda, items (lista con nombre y precio). Si un campo no existe, usa null. No inventes información. No incluyas texto adicional.`;
 

@@ -1,17 +1,18 @@
 // Servicio para guardar registro y eliminar imagen tras procesamiento
+import { createClient } from '@supabase/supabase-js';
+import crypto from 'crypto';
+import db from '../../supabase.js';
 class ReceiptPersistenceService {
   // Guarda registro, crea gastos, elimina imagen y actualiza campos
   async persistAndCleanup(parsedReceipt, userId, imagePath) {
-    const { createClient } = require('@supabase/supabase-js');
     const SUPABASE_URL = process.env.SUPABASE_URL;
     const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
     const BUCKET = 'receipts';
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
-    const db = require('../../supabase'); // Ajusta según tu conexión actual
 
     try {
       // Evitar duplicados: hash por imagen + usuario
-      const hash = require('crypto').createHash('sha256').update(imagePath + userId).digest('hex');
+      const hash = crypto.createHash('sha256').update(imagePath + userId).digest('hex');
       const exists = await db.query('SELECT id FROM receipt_scans WHERE idusuario = $1 AND image_path = $2', [userId, imagePath]);
       if (exists.rows.length > 0) {
         return { success: false };

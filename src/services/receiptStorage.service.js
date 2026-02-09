@@ -1,4 +1,5 @@
 // Servicio para validación de imagen y generación de signed URL
+import { createClient } from '@supabase/supabase-js';
 class ReceiptStorageService {
   // Valida formato y genera signed URL
   async validateAndSignUrl(imagePath) {
@@ -10,7 +11,6 @@ class ReceiptStorageService {
     }
 
     // Generar signed URL usando Supabase Storage
-    const { createClient } = require('@supabase/supabase-js');
     const SUPABASE_URL = process.env.SUPABASE_URL;
     const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
     const BUCKET = 'receipts';
