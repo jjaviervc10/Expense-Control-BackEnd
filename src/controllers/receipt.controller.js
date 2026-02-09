@@ -29,13 +29,29 @@ export default class ReceiptController {
           return res.status(502).json({ message: 'Error al extraer texto de imagen' });
       }
 
-      // Parsear y clasificar productos
+
+      // Extraer y limpiar el bloque JSON de la respuesta de OpenAI
+      let cleaned = rawText;
+      const match = rawText.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+      if (match) {
+        cleaned = match[1];
+      }
+      cleaned = cleaned.trim();
+      let receiptData;
+      try {
+        receiptData = JSON.parse(cleaned);
+      } catch (err) {
+        console.error('[processReceipt] Error al parsear ticket:', err);
+        console.error('[processReceipt] Texto recibido de OpenAI (limpio):', cleaned);
+        return res.status(502).json({ message: 'Error al parsear ticket' });
+      }
+
+      // Clasificar productos
       const parserService = (await import('../services/receiptParser.service.js')).default || (await import('../services/receiptParser.service.js'));
-      const { parsed } = await parserService.parseAndClassify(rawText);
+      const { parsed } = await parserService.parseAndClassify(JSON.stringify(receiptData));
       if (!parsed) {
         return res.status(502).json({ message: 'Error al parsear ticket' });
       }
-        console.error('[processReceipt] Texto recibido de OpenAI:', rawText);
 
       // Guardar registro y eliminar imagen
       const persistenceService = (await import('../services/receiptPersistence.service.js')).default || (await import('../services/receiptPersistence.service.js'));
