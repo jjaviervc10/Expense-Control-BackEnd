@@ -19,7 +19,10 @@ class ReceiptPersistenceService {
         })
         .select()
         .single();
-      if (error) throw error;
+      if (error) {
+        console.error('[receiptPersistence] Error al insertar en receipts:', error.message, error.code, error.details);
+        throw error;
+      }
 
       // 2️⃣ Guardar items
       if (Array.isArray(parsedReceipt.items)) {
@@ -30,7 +33,10 @@ class ReceiptPersistenceService {
           categoria: item.categoria || null
         }));
         const { error: itemsError } = await supabase.from('receipt_items').insert(items);
-        if (itemsError) throw itemsError;
+        if (itemsError) {
+          console.error('[receiptPersistence] Error al insertar items:', itemsError.message, itemsError.code, itemsError.details);
+          throw itemsError;
+        }
       }
 
       // 3️⃣ Eliminar imagen de Supabase Storage
