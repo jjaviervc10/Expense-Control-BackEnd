@@ -11,7 +11,9 @@ const CATEGORIAS = {
     "4": "Gastos Varios",
     "5": "Ocio",
     "6": "Salud",
-    "7": "Suscripciones"
+    "7": "Suscripciones",
+    "8": "Ropa",
+    "9": "Productos"
 };
 
 export const crearGasto = async(req, res) => {
