@@ -1,4 +1,66 @@
 // src/controllers/gasto.controller.js
+// Endpoint para marcar/desmarcar gasto como favorito
+export const marcarFavorito = async(req, res) => {
+    const { idGasto, favorito } = req.body;
+    const idUsuario = req.user.id;
+    if (!idGasto || typeof favorito !== "boolean") {
+        return res.status(400).json({ ok: false, message: "Datos incompletos" });
+    }
+    const { error } = await supabase
+        .from("cGasto")
+        .update({ favorito })
+        .eq("idGasto", idGasto)
+        .eq("idUsuario", idUsuario);
+    if (error) {
+        return res.status(500).json({ ok: false, message: "Error al actualizar favorito", error: error.message });
+    }
+    return res.json({ ok: true, message: "Favorito actualizado" });
+};
+
+// Endpoint para consultar gastos favoritos
+export const obtenerFavoritos = async(req, res) => {
+    const idUsuario = req.user.id;
+    const { data, error } = await supabase
+        .from("cGasto")
+        .select("*")
+        .eq("idUsuario", idUsuario)
+        .eq("favorito", true)
+        .eq("activo", true);
+    if (error) {
+        return res.status(500).json({ ok: false, message: "Error al obtener favoritos", error: error.message });
+    }
+    return res.json({ ok: true, favoritos: data });
+};
+
+// Endpoint para registrar gasto favorito (crear nuevo gasto basado en uno favorito)
+export const registrarGastoFavorito = async(req, res) => {
+    const { idGasto } = req.body;
+    const idUsuario = req.user.id;
+    if (!idGasto) {
+        return res.status(400).json({ ok: false, message: "Datos incompletos" });
+    }
+    // Obtener gasto favorito
+    const { data: favorito, error: errorFav } = await supabase
+        .from("cGasto")
+        .select("categoria, monto, tipo")
+        .eq("idGasto", idGasto)
+        .eq("idUsuario", idUsuario)
+        .eq("favorito", true)
+        .single();
+    if (errorFav || !favorito) {
+        return res.status(404).json({ ok: false, message: "Favorito no encontrado", error: errorFav?.message });
+    }
+    // Crear nuevo gasto basado en favorito
+    const { data, error } = await supabase
+        .from("cGasto")
+        .insert([{ ...favorito, idUsuario, fecha: new Date().toISOString(), activo: true, favorito: false }])
+        .select()
+        .single();
+    if (error) {
+        return res.status(500).json({ ok: false, message: "Error al registrar gasto favorito", error: error.message });
+    }
+    return res.json({ ok: true, gasto: data });
+};
 import supabase from "../supabase.js";
 
 /* ==========================
