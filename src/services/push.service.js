@@ -86,7 +86,7 @@ export const sendNotificationToUser = async(userId, payload) => {
             .eq("idusuario", userId);
 
         if (error) {
-            console.error("Error obteniendo suscripciones:", error);
+            console.error(`[NOTIF] Error obteniendo suscripciones para usuario ${userId}:`, error);
             return { sent: 0, failed: 0 };
         }
 
@@ -95,26 +95,31 @@ export const sendNotificationToUser = async(userId, payload) => {
 
         for (const record of subscriptions || []) {
             const subscription = record.subscription;
+            const endpoint = subscription?.endpoint;
+            console.log(`[NOTIF] Intentando enviar notificación a usuario ${userId} | endpoint: ${endpoint}`);
 
             const result = await sendPushNotification(subscription, payload);
 
             if (result.ok) {
                 sent++;
+                console.log(`[NOTIF] Notificación enviada exitosamente a usuario ${userId} | endpoint: ${endpoint}`);
             } else {
                 failed++;
+                console.error(`[NOTIF] Fallo al enviar notificación a usuario ${userId} | endpoint: ${endpoint} | error:`, result.error);
                 if (result.error && result.error.statusCode === 410) {
                     await supabase
                         .from("push_subscriptions")
                         .delete()
                         .eq("id", record.id)
-                        .catch(err => console.error("Error eliminando suscripción:", err));
+                        .catch(err => console.error(`[NOTIF] Error eliminando suscripción inválida para usuario ${userId} | endpoint: ${endpoint}:`, err));
                 }
             }
         }
 
+        console.log(`[NOTIF] Resumen usuario ${userId}: enviados=${sent}, fallidos=${failed}`);
         return { sent, failed };
     } catch (err) {
-        console.error("Error en sendNotificationToUser:", err);
+        console.error(`[NOTIF] Error general en sendNotificationToUser para usuario ${userId}:`, err);
         return { sent: 0, failed: 0 };
     }
 };
