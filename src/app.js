@@ -67,11 +67,20 @@ console.log('PORT env:', process.env.PORT);
 if (!process.env.PORT) {
     console.error('❌ ERROR: process.env.PORT no está definido. Railway no está inyectando el puerto.');
 }
+console.log('[INIT] Registrando rutas...');
+console.log('[INIT] Rutas disponibles: /api/auth, /api/notifications, /api/gasto, etc.');
 const PORT = process.env.PORT;
 app.listen(PORT, () => {
-        console.log("Servidor backend escuchando en puerto", PORT);
+    console.log(`[START] Servidor backend escuchando en puerto ${PORT}`);
 });
 
+// Captura errores globales
+process.on('uncaughtException', (err) => {
+    console.error('[ERROR][uncaughtException]', err);
+});
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('[ERROR][unhandledRejection]', reason);
+});
 
 // Manejo global de errores para evitar caídas inesperadas
 process.on('uncaughtException', err => {
