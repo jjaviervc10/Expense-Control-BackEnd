@@ -30,7 +30,7 @@ export const subscribe = async(req, res) => {
     try {
 
         const idusuario = req.user.id;
-        const { endpoint, keys } = req.body;
+        const { endpoint, keys, device_type } = req.body;
 
         if (!endpoint || !keys || !keys.auth || !keys.p256dh) {
             return res.status(400).json({
@@ -66,14 +66,14 @@ export const subscribe = async(req, res) => {
             // Si existe, actualizar la suscripción
             ({ data, error } = await supabase
                 .from("push_subscriptions")
-                .update({ subscription: subscriptionObject })
+                .update({ subscription: subscriptionObject, device_type })
                 .eq("id", existing.id)
                 .select());
         } else {
             // Si no existe, insertar nueva
             ({ data, error } = await supabase
                 .from("push_subscriptions")
-                .insert([{ idusuario, subscription: subscriptionObject }])
+                .insert([{ idusuario, subscription: subscriptionObject, device_type }])
                 .select());
         }
 
