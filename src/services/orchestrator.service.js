@@ -38,10 +38,11 @@ export async function orchestrateNotification({ tipo, horario }) {
     }
 
     // Si el usuario ya registró gastos hoy (simulado)
-    if (tipo === 'recordatorio' && fakeMetrics.gastosSemana > 0) {
-      console.log(`[SKIP] Usuario ${sub.idusuario} ya registró gastos hoy (simulado)`);
-      continue;
-    }
+    // TEST: Desactivado SKIP por gastosSemana para forzar envío
+    // if (tipo === 'recordatorio' && fakeMetrics.gastosSemana > 0) {
+    //   console.log(`[SKIP] Usuario ${sub.idusuario} ya registró gastos hoy (simulado)`);
+    //   continue;
+    // }
 
     // Selección de copy y variante
     const copy = selectCopy(tipo, horario, sub.idusuario, fakeMetrics, campaign);
